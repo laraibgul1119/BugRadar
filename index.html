@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugRadar - Error Tracking & Real-time Monitoring</title>
+    <style>
+        :root {
+            --bg-color: #030303;
+            --card-bg: #0d0d11;
+            --card-border: #1f1f26;
+            --text-main: #ffffff;
+            --text-muted: #8a8f98;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-pink: #ec4899;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --green-text: #34d399;
+            --red-text: #f87171;
+            --border-radius-lg: 24px;
+            --border-radius-md: 14px;
+            --border-radius-sm: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Background Corner Graphics */
+        .corner-graphic {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            object-fit: contain;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.9;
+            mix-blend-mode: screen;
+            filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.3));
+        }
+
+        .graphic-top-right {
+            top: 100px;
+            right: 40px;
+        }
+
+        .graphic-bottom-left {
+            bottom: -20px;
+            left: 20px;
+        }
+
+        /* --- HEADER & NAV --- */
+        header {
+            width: 100%;
+            max-width: 900px;
+            margin-top: 10px;
+            position: relative;
+            z-index: 10;
+        }
+
+        nav {
+            background-color: rgba(10, 10, 12, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 9999px;
+            padding: 10px 16px 10px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: color 0.3s ease;
+        }
+
+        .logo-icon {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        .nav-links a:hover,
+        .logo:hover {
+            color: #3b82f6;
+            text-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
+        }
+
+        .btn-cta-nav {
+            background-color: #ffffff;
+            color: #000000;
+            padding: 10px 20px;
+            border-radius: 9999px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cta-nav:hover {
+            opacity: 0.9;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+            color: #2563eb;
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            text-align: center;
+            max-width: 650px;
+            margin: 80px 0 50px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 4.2rem;
+            font-weight: 500;
+            letter-spacing: -0.04em;
+            line-height: 1.05;
+            margin-bottom: 24px;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 32px;
+            max-width: 540px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            background-color: #ffffff;
+            color: #000000;
+            padding: 12px 24px;
+            border-radius: 9999px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .btn-secondary {
+            background-color: #1a1a1e;
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            padding: 12px 24px;
+            border-radius: 9999px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary::before {
+            content: "📄";
+            font-size: 0.8rem;
+        }
+
+        /* --- MAIN CONSOLE DEMO DASHBOARD --- */
+        .dashboard-container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #0b0b0d;
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            margin-bottom: 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #08080a;
+            border-right: 1px solid var(--card-border);
+            padding: 20px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-group-title {
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sidebar-item a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            border-radius: var(--border-radius-sm);
+        }
+
+        .sidebar-item.active a {
+            background-color: #1c1c22;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background-color: #0d0d10;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .metric-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--border-radius-md);
+            padding: 12px 16px;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .metric-title {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .badge {
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .badge.green {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--green-text);
+        }
+
+        .badge.red {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--red-text);
+        }
+
+        .metric-value {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .chart-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--border-radius-md);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .time-filters {
+            display: flex;
+            gap: 4px;
+            background-color: #08080a;
+            padding: 2px;
+            border-radius: 6px;
+            border: 1px solid var(--card-border);
+        }
+
+        .time-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 2px 6px;
+            font-size: 0.65rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .time-btn.active {
+            background-color: #1c1c22;
+            color: var(--text-main);
+        }
+
+        .chart-area {
+            height: 140px;
+            width: 100%;
+        }
+
+        .chart-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- PROBLEM VS SOLUTION OVERVIEW --- */
+        .ps-overview-section {
+            width: 100%;
+            max-width: 900px;
+            margin: 20px 0 80px 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .ps-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 500;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+            margin-bottom: 50px;
+        }
+
+        .ps-container {
+            display: grid;
+            grid-template-columns: 1fr 220px 1fr;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .ps-col {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .ps-col.left { text-align: right; }
+        .ps-col.right { text-align: left; }
+
+        .ps-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .ps-item-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .left .ps-item-title { color: var(--red-text); }
+        .right .ps-item-title { 
+            background: linear-gradient(90deg, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .ps-item-text {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .left .ps-item-text { justify-content: flex-end; }
+        .right .ps-item-text { justify-content: flex-start; }
+
+        .left .icon { color: var(--red-text); }
+        .right .icon { color: var(--green-text); }
+
+        .ps-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spiral-img {
+            width: 100%;
+            max-width: 220px;
+            height: auto;
+            object-fit: contain;
+            mix-blend-mode: screen;
+            filter: drop-shadow(0 0 25px rgba(59, 130, 246, 0.25));
+        }
+
+        /* --- FEATURE SECTIONS --- */
+        .feature-sections-wrapper {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 80px;
+            margin-bottom: 100px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .feature-section {
+            background-color: #08080c;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--border-radius-lg);
+            padding: 50px 45px;
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 45px;
+            align-items: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            transition: border-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .feature-section:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .feature-section.reverse {
+            grid-template-columns: 1.3fr 1fr;
+        }
+
+        .feature-info {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .feature-badge {
+            align-self: flex-start;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            color: #60a5fa;
+            letter-spacing: 0.05em;
+        }
+
+        .feature-info h3 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+            line-height: 1.25;
+        }
+
+        .feature-info p {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .mini-console-card {
+            background-color: #020204;
+            border: 1px solid #1a1a24;
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+            position: relative;
+            min-height: 220px;
+        }
+
+        .console-header {
+            background-color: #09090e;
+            padding: 12px 18px;
+            border-bottom: 1px solid #1a1a24;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .console-dots {
+            display: flex;
+            gap: 7px;
+        }
+
+        .dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+        }
+
+        .dot.red { background-color: #ef4444; }
+        .dot.yellow { background-color: #f59e0b; }
+        .dot.green { background-color: #10b981; }
+
+        .console-title-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        .console-body {
+            padding: 24px;
+            font-family: monospace;
+            font-size: 0.88rem;
+            color: #d1d5db;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            min-height: 170px;
+            justify-content: center;
+        }
+
+        .log-line {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            line-height: 1.5;
+        }
+
+        .log-line.error { color: #f87171; }
+        .log-line.success { color: #34d399; }
+        .log-line.info { color: #60a5fa; }
+
+        .cursor-pointer-img {
+            position: absolute;
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.9));
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .pointer-pos-1 { top: 40px; right: 35px; }
+        .pointer-pos-2 { bottom: 30px; right: 45px; }
+        .pointer-pos-3 { top: 45px; right: 50px; }
+        .pointer-pos-4 { bottom: 25px; right: 35px; }
+
+        /* --- INTERMEDIATE IMAGE BANNER --- */
+        .middle-banner {
+            width: 100%;
+            max-width: 900px;
+            margin: 20px 0 90px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .middle-banner-img {
+            width: 100%;
+            max-height: 380px;
+            object-fit: cover;
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.15);
+            filter: brightness(0.95) contrast(1.05);
+        }
+
+        /* --- HOW IT WORKS SECTION (CIRCULAR FORM) --- */
+        .how-it-works-section {
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 120px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-header h2 {
+            font-size: 2.2rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .circular-hiw-container {
+            position: relative;
+            width: 100%;
+            min-height: 540px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hiw-center-node {
+            position: absolute;
+            z-index: 3;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(13, 13, 17, 0.8) 70%);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            box-shadow: 0 0 50px rgba(139, 92, 246, 0.25);
+        }
+
+        .hiw-center-img {
+            width: 160px;
+            height: 160px;
+            object-fit: contain;
+            mix-blend-mode: screen;
+            filter: drop-shadow(0 0 25px rgba(59, 130, 246, 0.5));
+            animation: floatGlow 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatGlow {
+            0% { transform: translateY(-5px) scale(0.98); filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.4)); }
+            100% { transform: translateY(5px) scale(1.02); filter: drop-shadow(0 0 35px rgba(236, 72, 153, 0.6)); }
+        }
+
+        .orbit-ring {
+            position: absolute;
+            width: 440px;
+            height: 440px;
+            border-radius: 50%;
+            background: radial-gradient(circle, transparent 60%, rgba(59, 130, 246, 0.03) 100%);
+            border: 1px dashed rgba(139, 92, 246, 0.2);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .circular-step-card {
+            position: absolute;
+            width: 280px;
+            background-color: rgba(13, 13, 17, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: var(--border-radius-md);
+            padding: 20px;
+            z-index: 4;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .circular-step-card:hover {
+            border-color: rgba(59, 130, 246, 0.5);
+            transform: scale(1.03);
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.2);
+        }
+
+        .step-pos-1 { top: 0; left: 50%; transform: translateX(-50%); }
+        .step-pos-2 { bottom: 10px; right: 20px; }
+        .step-pos-3 { bottom: 10px; left: 20px; }
+
+        .circular-step-card .hiw-number {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #60a5fa 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+            display: inline-block;
+        }
+
+        .circular-step-card .hiw-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        .circular-step-card .hiw-desc {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .code-snippet-box {
+            background-color: #020203;
+            border: 1px solid #1a1a22;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.72rem;
+            color: #a78bfa;
+            margin-top: 8px;
+            overflow-x: auto;
+        }
+
+        .code-keyword { color: #f472b6; }
+        .code-string { color: #34d399; }
+
+        /* --- FINAL CTA SECTION (VERTICAL GRAPHIC WITH GLASSMORPHISM CONTENT) --- */
+        .cta-section {
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+            border-radius: 32px;
+            padding: 90px 40px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 100px;
+            z-index: 2;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Flowing Liquid Vertical Background Graphic */
+        .cta-bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            z-index: 1;
+            filter: brightness(0.65) contrast(1.1);
+        }
+
+        /* Subtle dark gradient overlay for optimal legibility */
+        .cta-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(3, 3, 3, 0.4) 0%, rgba(3, 3, 3, 0.65) 100%);
+            z-index: 2;
+        }
+
+        /* Glassmorphism Inner Card Container */
+        .cta-glass-card {
+            position: relative;
+            z-index: 3;
+            max-width: 680px;
+            padding: 50px 40px;
+            border-radius: 24px;
+            background: rgba(10, 10, 16, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .cta-glass-card h2 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .cta-glass-card p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.1rem;
+            max-width: 500px;
+        }
+
+        /* Glass Button */
+        .btn-cta-large {
+            margin-top: 10px;
+            padding: 16px 38px;
+            border-radius: 9999px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-cta-large:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.6);
+            transform: translateY(-2px);
+            color: #ffffff;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            width: 100%;
+            max-width: 900px;
+            border-top: 1px solid var(--card-border);
+            padding: 60px 0 30px 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr repeat(3, 1fr);
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-brand h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .footer-brand p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            max-width: 220px;
+            line-height: 1.5;
+        }
+
+        .footer-col h5 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-main);
+            margin-bottom: 16px;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .footer-col a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-col a:hover {
+            color: #3b82f6;
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Responsive Layout Adjustments */
+        @media (max-width: 850px) {
+            .feature-section, .feature-section.reverse {
+                grid-template-columns: 1fr;
+                padding: 35px 25px;
+            }
+            .ps-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            .ps-col.left, .ps-col.right { text-align: center; }
+            .left .ps-item-text, .right .ps-item-text { justify-content: center; }
+            
+            .circular-hiw-container {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                min-height: auto;
+            }
+            .hiw-center-node, .orbit-ring {
+                position: relative;
+                margin: 0 auto;
+            }
+            .orbit-ring { display: none; }
+            .circular-step-card {
+                position: relative;
+                top: auto !important;
+                left: auto !important;
+                right: auto !important;
+                bottom: auto !important;
+                transform: none !important;
+                width: 100%;
+                max-width: 400px;
+            }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .corner-graphic { display: none; }
+            .hero h1 { font-size: 2.8rem; }
+            .nav-links { display: none; }
+            .metrics-grid { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .cta-glass-card h2 { font-size: 1.8rem; }
+            .cta-glass-card { padding: 35px 20px; }
+        }
+    
+        /* Landing Mobile Hamburger Navigation */
+        .landing-hamburger-btn {
+            display: none;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            width: 38px;
+            height: 38px;
+            border-radius: 9999px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 0;
+        }
+        .landing-hamburger-btn span {
+            display: block;
+            width: 16px;
+            height: 2px;
+            background: #ffffff;
+            border-radius: 2px;
+            transition: all 0.25s;
+        }
+
+        .landing-mobile-drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .landing-mobile-drawer.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .landing-mobile-drawer a {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .landing-mobile-drawer a:hover {
+            color: #3b82f6;
+        }
+        .landing-drawer-close {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #ffffff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .landing-hamburger-btn {
+                display: flex !important;
+            }
+            .btn-cta-nav {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Decorative Corner Elements -->
+    <img src="1.png" alt="Glass Sphere Top Right" class="corner-graphic graphic-top-right">
+    <img src="1.png" alt="Glass Sphere Bottom Left" class="corner-graphic graphic-bottom-left">
+
+    <!-- Header Navigation -->
+    <header>
+        <nav>
+            <a href="index.html" class="logo">
+                <span class="logo-icon">∞</span> BugRadar
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How it Works</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+            <a href="signup.html" class="btn-cta-nav">Get Started</a>
+            <button class="landing-hamburger-btn" onclick="toggleLandingDrawer()" aria-label="Toggle Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+
+        <!-- Landing Mobile Drawer -->
+        <div class="landing-mobile-drawer" id="landingDrawer">
+            <button class="landing-drawer-close" onclick="toggleLandingDrawer()">&#x2715;</button>
+            <a href="#features" onclick="toggleLandingDrawer()">Features</a>
+            <a href="#how-it-works" onclick="toggleLandingDrawer()">How it Works</a>
+            <a href="dashboard.html">Dashboard Demo</a>
+            <a href="login.html">Log In</a>
+            <a href="signup.html" style="background:#3b82f6; color:#fff; padding:12px 28px; border-radius:50px; font-size:1rem;">Get Started Free</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Performance<br>meets scale.</h1>
+        <p>BugRadar provides the infrastructure you need to monitor, detect, and fix errors before your users even notice them.</p>
+        <div class="hero-buttons">
+            <a href="#" class="btn-primary">Get started free</a>
+            <a href="#" class="btn-secondary">Read the docs</a>
+        </div>
+    </section>
+
+    <!-- Main Dashboard Preview Screenshot -->
+    <div class="dashboard-container" style="position:relative; padding: 0; background: transparent; border: none; overflow: visible;">
+        <div style="
+            position: relative;
+            max-width: 1100px;
+            margin: 0 auto;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(59,130,246,0.25);
+            box-shadow: 0 0 60px rgba(59,130,246,0.2), 0 40px 80px rgba(0,0,0,0.7);
+        ">
+            <img 
+                src="dashboard-preview.png" 
+                alt="BugRadar Dashboard Preview" 
+                style="
+                    width: 100%;
+                    height: auto;
+                    display: block;
+                    border-radius: 20px;
+                "
+            >
+            <!-- Subtle gradient fade at bottom -->
+            <div style="
+                position: absolute;
+                bottom: 0; left: 0; right: 0;
+                height: 80px;
+                background: linear-gradient(to bottom, transparent, #050508);
+                pointer-events: none;
+            "></div>
+        </div>
+    </div>
+
+    <!-- Direct Problem vs Solution Section -->
+    <section class="ps-overview-section">
+        <h2 class="ps-title">Your users shouldn't be your error logs.</h2>
+        
+        <div class="ps-container">
+            <div class="ps-col left">
+                <div class="ps-item">
+                    <div class="ps-item-title">Problem</div>
+                    <div class="ps-item-text">console.log everywhere <span class="icon">✕</span></div>
+                </div>
+                <div class="ps-item">
+                    <div class="ps-item-title">Problem</div>
+                    <div class="ps-item-text">Manual bug reports <span class="icon">✕</span></div>
+                </div>
+                <div class="ps-item">
+                    <div class="ps-item-title">Problem</div>
+                    <div class="ps-item-text">No idea what broke <span class="icon">✕</span></div>
+                </div>
+                <div class="ps-item">
+                    <div class="ps-item-title">Problem</div>
+                    <div class="ps-item-text">Difficult debugging <span class="icon">✕</span></div>
+                </div>
+            </div>
+
+            <div class="ps-center">
+                <img src="2.png" alt="Spiral Element" class="spiral-img">
+            </div>
+
+            <div class="ps-col right">
+                <div class="ps-item">
+                    <div class="ps-item-title">BugRadar</div>
+                    <div class="ps-item-text"><span class="icon">✓</span> Capture errors automatically</div>
+                </div>
+                <div class="ps-item">
+                    <div class="ps-item-title">BugRadar</div>
+                    <div class="ps-item-text"><span class="icon">✓</span> Group duplicate issues</div>
+                </div>
+                <div class="ps-item">
+                    <div class="ps-item-title">BugRadar</div>
+                    <div class="ps-item-text"><span class="icon">✓</span> See stack traces</div>
+                </div>
+                <div class="ps-item">
+                    <div class="ps-item-title">BugRadar</div>
+                    <div class="ps-item-text"><span class="icon">✓</span> Know affected users & resolve faster</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURE SECTIONS -->
+    <div class="feature-sections-wrapper" id="features">
+
+        <!-- Feature Section 1 -->
+        <div class="feature-section">
+            <div class="feature-info">
+                <span class="feature-badge">Feature 01</span>
+                <h3>Capture Errors Automatically</h3>
+                <p>Never rely on console.log again. BugRadar instantly catches unhandled exceptions and real-time frontend failures with zero setup required across all web runtimes.</p>
+            </div>
+            <div class="mini-console-card">
+                <div class="console-header">
+                    <div class="console-dots">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <span class="console-title-text">bugradar-auto-capture.js</span>
+                </div>
+                <div class="console-body">
+                    <div class="log-line error">❌ Uncaught TypeError: Cannot read properties of undefined</div>
+                    <div class="log-line info">⚡ Captured automatically by BugRadar Agent v2.4</div>
+                    <div class="log-line success">✓ Event logged & dispatched (24ms)</div>
+                    <img src="3.png" alt="Click Pointer" class="cursor-pointer-img pointer-pos-1">
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Section 2 -->
+        <div class="feature-section reverse">
+            <div class="mini-console-card">
+                <div class="console-header">
+                    <div class="console-dots">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <span class="console-title-text">issue-grouper.ts</span>
+                </div>
+                <div class="console-body">
+                    <div class="log-line info">🔍 Analyzing incoming payload...</div>
+                    <div class="log-line success">✓ Match found: Fingerprint #ERR-8902</div>
+                    <div class="log-line error">➔ Grouped 1,420 duplicate instances into 1 thread</div>
+                    <img src="5.jpeg" alt="Click Pointer" class="cursor-pointer-img pointer-pos-2">
+                </div>
+            </div>
+            <div class="feature-info">
+                <span class="feature-badge">Feature 02</span>
+                <h3>Group Duplicate Issues</h3>
+                <p>Stop drowning in endless duplicate alert emails. Smart fingerprinting automatically aggregates identical bugs into a single organized, actionable thread.</p>
+            </div>
+        </div>
+
+        <!-- Feature Section 3 -->
+        <div class="feature-section">
+            <div class="feature-info">
+                <span class="feature-badge">Feature 03</span>
+                <h3>See Stack Traces</h3>
+                <p>Pinpoint the exact line of code that failed. Inspect full source maps, breadcrumbs, and exact state variables right before the error was triggered.</p>
+            </div>
+            <div class="mini-console-card">
+                <div class="console-header">
+                    <div class="console-dots">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <span class="console-title-text">stack-trace-inspector.sh</span>
+                </div>
+                <div class="console-body">
+                    <div class="log-line">at CheckoutButton (Checkout.tsx:42)</div>
+                    <div class="log-line">at processPayment (api/stripe.ts:108)</div>
+                    <div class="log-line error">➔ SourceMap decoded: Line 108:14 [Click to Jump]</div>
+                    <img src="Free PSD Templates - Most Downloaded Files _ Magnific (formerly Freepik).jpeg" alt="Click Pointer" class="cursor-pointer-img pointer-pos-3">
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Section 4 -->
+        <div class="feature-section reverse">
+            <div class="mini-console-card">
+                <div class="console-header">
+                    <div class="console-dots">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <span class="console-title-text">user-impact-analytics.json</span>
+                </div>
+                <div class="console-body">
+                    <div class="log-line info">👤 Affected User: user_88291 (Chrome / macOS)</div>
+                    <div class="log-line error">⚠️ Impact score: High (VIP Customer)</div>
+                    <div class="log-line success">✓ Auto-assigned to Dev Team & One-click Resolved</div>
+                    <img src="Free PSD Templates - Most Downloaded Files _ Magnific (formerly Freepik).jpeg" alt="Click Pointer" class="cursor-pointer-img pointer-pos-4">
+                </div>
+            </div>
+            <div class="feature-info">
+                <span class="feature-badge">Feature 04</span>
+                <h3>Know Affected Users & Resolve Faster</h3>
+                <p>Understand user impact immediately. Prioritize fixes based on high-value customer accounts and ship reliable patches in minutes instead of days.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- INTERMEDIATE IMAGE BANNER -->
+    <div class="middle-banner">
+        <img src="designhunt photos, images, assets.jpeg" alt="Fluid Metallic Wave Banner" class="middle-banner-img">
+    </div>
+
+    <!-- HOW IT WORKS SECTION -->
+    <section class="how-it-works-section" id="how-it-works">
+        <div class="section-header">
+            <h2>How it Works</h2>
+            <p>Get up and running in less than two minutes with 3 simple steps.</p>
+        </div>
+
+        <div class="circular-hiw-container">
+            <div class="hiw-center-node">
+                <img src="3.png" alt="Glass Knot Geometric Image" class="hiw-center-img">
+            </div>
+
+            <div class="orbit-ring"></div>
+
+            <div class="circular-step-card step-pos-1">
+                <span class="hiw-number">01</span>
+                <h3 class="hiw-title">Connect your app</h3>
+                <p class="hiw-desc">Initialize BugRadar SDK in your codebase with a single line of code.</p>
+                
+                <div class="code-snippet-box">
+                    <span class="code-keyword">BugRadar</span>.init({<br>
+                    &nbsp;&nbsp;dsn: <span class="code-string">"your-project-dsn"</span><br>
+                    });
+                </div>
+            </div>
+
+            <div class="circular-step-card step-pos-2">
+                <span class="hiw-number">02</span>
+                <h3 class="hiw-title">BugRadar captures errors</h3>
+                <p class="hiw-desc">Real-time background workers capture stack traces, user breadcrumbs, and environment data instantly.</p>
+            </div>
+
+            <div class="circular-step-card step-pos-3">
+                <span class="hiw-number">03</span>
+                <h3 class="hiw-title">Find → Investigate → Resolve</h3>
+                <p class="hiw-desc">Track root causes with source maps, assign issues to your team, and deploy fixes seamlessly.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- UPDATED FINAL CTA SECTION (VERTICAL LIQUID BACKGROUND WITH GLASS CARD) -->
+    <section class="cta-section">
+        <!-- Flowing liquid vertical image background -->
+        <img src="5.jpeg" alt="Flowing Liquid Vertical Gradient" class="cta-bg-image">
+        <div class="cta-overlay"></div>
+
+        <!-- Glassmorphism Container Card -->
+        <div class="cta-glass-card">
+            <h2>Stop finding bugs from user complaints.</h2>
+            <p>Start monitoring your app with BugRadar today.</p>
+            <a href="#" class="btn-cta-large">Get Started — It's Free</a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h4>BugRadar</h4>
+                <p>Automated error tracking and real-time app performance monitoring built for modern engineering teams.</p>
+            </div>
+
+            <div class="footer-col">
+                <h5>Product</h5>
+                <ul>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">Pricing</a></li>
+                    <li><a href="#">Docs</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h5>Resources</h5>
+                <ul>
+                    <li><a href="#">GitHub</a></li>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">Status</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h5>Company</h5>
+                <ul>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>© 2026 BugRadar. All rights reserved.</p>
+            <p>Designed with care for developers.</p>
+        </div>
+    </footer>
+
+
+    <script>
+        function toggleLandingDrawer() {
+            const drawer = document.getElementById('landingDrawer');
+            if (drawer) drawer.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
